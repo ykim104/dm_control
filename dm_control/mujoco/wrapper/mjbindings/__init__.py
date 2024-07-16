@@ -15,7 +15,6 @@
 
 """Import core names of MuJoCo ctypes bindings."""
 
-
 from absl import logging
 
 from dm_control.mujoco.wrapper.mjbindings import constants

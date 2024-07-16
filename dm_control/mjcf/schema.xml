@@ -128,6 +128,7 @@
             <attribute name="glow" type="float"/>
             <attribute name="offwidth" type="int"/>
             <attribute name="offheight" type="int"/>
+            <attribute name="realtime" type="float" />
             <attribute name="ellipsoidinertia" type="keyword" valid_values="false true"/>
           </attributes>
         </element>

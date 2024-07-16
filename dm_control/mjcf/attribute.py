@@ -21,16 +21,14 @@ import hashlib
 import io
 import os
 
+import numpy as np
 from dm_control.mjcf import base
 from dm_control.mjcf import constants
 from dm_control.mjcf import debugging
 from dm_control.mjcf import skin
 from dm_control.mujoco.wrapper import util
-import numpy as np
 
 # Copybara placeholder for internal file handling dependency.
-
-from dm_control.utils import io as resources
 
 
 _INVALID_REFERENCE_TYPE = (
@@ -412,12 +410,12 @@ class BasePath(_Attribute):
     return None
 
 
-class BaseAsset:
+class BaseAsset(abc.ABC):
   """Base class for binary assets."""
 
   __slots__ = ('extension', 'prefix')
 
-  def __init__(self, extension, prefix=''):
+  def __init__(self, extension: str, prefix: str):
     self.extension = extension
     self.prefix = prefix
 
@@ -447,19 +445,39 @@ class BaseAsset:
 class Asset(BaseAsset):
   """Class representing a binary asset."""
 
-  __slots__ = ('contents',)
+  @property
+  @abc.abstractmethod
+  def contents(self):
+    raise NotImplementedError
+
+
+class FixedAsset(BaseAsset):
+  """Class representing a binary asset."""
+
+  __slots__ = ('_contents',)
 
   def __init__(self, contents, extension, prefix=''):
-    """Initializes a new `Asset`.
+      self._contents = contents
+      super().__init__(extension, prefix)
 
-    Args:
-      contents: The contents of the file as a bytestring.
-      extension: A string specifying the file extension (e.g. '.png', '.stl').
-      prefix: (optional) A prefix applied to the filename given in MuJoCo's VFS.
-    """
-    self.contents = contents
-    super().__init__(extension, prefix)
+  @property
+  def contents(self):
+    return self._contents
 
+
+class SymbolicAsset(BaseAsset):
+  """Class representing a binary asset."""
+
+  def __init__(self, file_path: str, prefix: str):
+    self.file_path = file_path
+    _, extension = os.path.splitext(file_path)
+
+    super().__init__(extension=extension, prefix=prefix)
+
+  @property
+  def contents(self):
+    with open(self.file_path, "rb") as f:
+        return f.read()
 
 class SkinAsset(BaseAsset):
   """Class representing a binary asset corresponding to a skin."""
@@ -480,6 +498,20 @@ class SkinAsset(BaseAsset):
       self._cached_contents = skin.serialize(self.skin)
       self._cached_revision = self.parent.namescope.revision
     return self._cached_contents
+
+class SymbolicSkinAsset(SymbolicAsset):
+  """Class representing a binary asset corresponding to a skin."""
+
+  def __init__(self, file_path: str, parent, prefix: str):
+    self.file_path = file_path
+    self.parent = parent
+
+    super().__init__(file_path=file_path, prefix=prefix)
+
+  @property
+  def contents(self):
+    with open(self.file_path, "rb") as f:
+      return skin.parse(f.read(), lambda body_name: self.parent.root.find('body', body_name))
 
 
 class File(_Attribute):
@@ -506,7 +538,7 @@ class File(_Attribute):
       self._validate_extension(asset.extension)
       self._value = asset
 
-  def _get_asset_from_path(self, path):
+  def _get_asset_from_path(self, path: str):
     """Constructs a `Asset` given a file path."""
     _, basename = os.path.split(path)
     filename, extension = os.path.splitext(basename)
@@ -520,6 +552,7 @@ class File(_Attribute):
       )
 
     if path in self._parent.namescope.assets:
+      raise NotImplementedError
       # Look in the dict of pre-loaded assets before checking the filesystem.
       contents = self._parent.namescope.assets[path]
     else:
@@ -542,15 +575,20 @@ class File(_Attribute):
           and assetdir is not None
       ):
         path_parts.append(assetdir)
+
       path_parts.append(path)
       full_path = os.path.join(*path_parts)  # pylint: disable=no-value-for-parameter
-      contents = resources.GetResource(full_path)
+
+      # contents = resources.GetResource(full_path)
 
     if self._parent.tag == constants.SKIN:
-      return SkinAsset(contents=contents, parent=self._parent,
-                       extension=extension, prefix=filename)
+      return SymbolicSkinAsset(
+        file_path=full_path,
+        parent=self._parent,
+        prefix=filename
+      )
     else:
-      return Asset(contents=contents, extension=extension, prefix=filename)
+      return SymbolicAsset(file_path=full_path, prefix=filename)
 
   def _validate_extension(self, extension):
     if self._parent.tag == constants.MESH:
@@ -568,6 +606,36 @@ class File(_Attribute):
     """Returns the asset filename as it will appear in the generated XML."""
     del prefix_root  # Unused
     if self._value is not None:
-      return self._value.get_vfs_filename()
+      assetdir = None
+      if self._parent.namescope.has_identifier(
+          constants.BASEPATH, constants.ASSETDIR_NAMESPACE
+      ):
+        assetdir = self._parent.namescope.get(
+          constants.BASEPATH, constants.ASSETDIR_NAMESPACE
+        )
+
+      # Construct the full path to the asset file, prefixed by the path to the
+      # model directory, and by `meshdir` or `texturedir` if appropriate.
+      path_parts = [self._parent.namescope.model_dir]
+
+      if self._parent.namescope.has_identifier(
+          constants.BASEPATH, self._path_namespace
+      ):
+        base_path = self._parent.namescope.get(
+          constants.BASEPATH, self._path_namespace
+        )
+        path_parts.append(base_path)
+      elif (
+          self._path_namespace
+          in (constants.TEXTUREDIR_NAMESPACE, constants.MESHDIR_NAMESPACE)
+          and assetdir is not None
+      ):
+        path_parts.append(assetdir)
+
+      path_parts = [p for p in path_parts if p is not None]
+      if len(path_parts) == 0:
+        return self._value.file_path
+      else:
+        return os.path.relpath(self._value.file_path, os.path.join(*path_parts))
     else:
       return None
