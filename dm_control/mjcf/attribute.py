@@ -604,38 +604,15 @@ class File(_Attribute):
 
   def to_xml_string(self, prefix_root=None, **kwargs):
     """Returns the asset filename as it will appear in the generated XML."""
-    del prefix_root  # Unused
+    while prefix_root != prefix_root.root:
+        prefix_root = prefix_root.root
+
     if self._value is not None:
-      assetdir = None
-      if self._parent.namescope.has_identifier(
-          constants.BASEPATH, constants.ASSETDIR_NAMESPACE
-      ):
-        assetdir = self._parent.namescope.get(
-          constants.BASEPATH, constants.ASSETDIR_NAMESPACE
-        )
-
-      # Construct the full path to the asset file, prefixed by the path to the
-      # model directory, and by `meshdir` or `texturedir` if appropriate.
-      path_parts = [self._parent.namescope.model_dir]
-
-      if self._parent.namescope.has_identifier(
-          constants.BASEPATH, self._path_namespace
-      ):
-        base_path = self._parent.namescope.get(
-          constants.BASEPATH, self._path_namespace
-        )
-        path_parts.append(base_path)
-      elif (
-          self._path_namespace
-          in (constants.TEXTUREDIR_NAMESPACE, constants.MESHDIR_NAMESPACE)
-          and assetdir is not None
-      ):
-        path_parts.append(assetdir)
-
-      path_parts = [p for p in path_parts if p is not None]
-      if len(path_parts) == 0:
+      # Construct the relative path from the top-level model dir to the asset file
+      # if such a model dir exists
+      if prefix_root.model_dir is None:
         return self._value.file_path
       else:
-        return os.path.relpath(self._value.file_path, os.path.join(*path_parts))
+        return os.path.relpath(self._value.file_path, prefix_root.model_dir)
     else:
       return None
