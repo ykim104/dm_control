@@ -117,7 +117,8 @@ class MJCFCamera(base.Observable):
                depth=False,
                segmentation=False,
                scene_option=None,
-               render_flag_overrides=None):
+               render_flag_overrides=None,
+               orthographic=False):
     """Initializes this observable.
 
     Args:
@@ -187,8 +188,17 @@ class MJCFCamera(base.Observable):
     self._segmentation = segmentation
     self._scene_option = scene_option
     self._render_flag_overrides = render_flag_overrides
+    self._orthographic = orthographic
     super().__init__(update_interval, buffer_size, delay, aggregator, corruptor)
 
+  @property 
+  def orthographic(self):
+    return self._orthographic
+  
+  @orthographic.setter
+  def orthographic(self, value):
+    self._orthographic = value
+    
   @property
   def height(self):
     return self._height
@@ -270,7 +280,9 @@ class MJCFCamera(base.Observable):
           depth=self._depth,
           segmentation=self._segmentation,
           scene_option=self._scene_option,
-          render_flag_overrides=self._render_flag_overrides)
+          render_flag_overrides=self._render_flag_overrides,
+          #orthographic=self._orthographic,
+          )
       return np.atleast_3d(pixels)
 
     return get_observation

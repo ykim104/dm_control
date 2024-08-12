@@ -342,6 +342,7 @@
             <attribute name="principalpixel" type="array" array_type="float" array_size="2"/>
             <attribute name="sensorsize" type="array" array_type="float" array_size="2"/>
             <attribute name="user" type="array" array_type="float"/>
+            <attribute name="orthographic" type="keyword" valid_values="false true"/>
           </attributes>
         </element>
         <element name="light">
@@ -1088,6 +1089,7 @@
             <attribute name="principalpixel" type="array" array_type="float" array_size="2"/>
             <attribute name="sensorsize" type="array" array_type="float" array_size="2"/>
             <attribute name="user" type="array" array_type="float"/>
+            <attribute name="orthographic" type="keyword" valid_values="false true"/>
           </attributes>
         </element>
         <element name="light" repeated="true">
@@ -1477,6 +1479,7 @@
                 <attribute name="principalpixel" type="array" array_type="float" array_size="2"/>
                 <attribute name="sensorsize" type="array" array_type="float" array_size="2"/>
                 <attribute name="user" type="array" array_type="float"/>
+                <attribute name="orthographic" type="keyword" valid_values="false true"/>
               </attributes>
             </element>
             <element name="light" repeated="true">
