@@ -147,10 +147,11 @@ class NameScope:
     if not isinstance(identifier, str):
       raise ValueError(
           'Identifier must be a string: got {}'.format(type(identifier)))
-    elif constants.PREFIX_SEPARATOR in identifier:
-      raise ValueError(
-          'Identifier cannot contain {!r}: got {}'
-          .format(constants.PREFIX_SEPARATOR, identifier))
+    # YEJIN: annoying that it allows this during scene creation but won't let it set to copy from xml
+    #elif constants.PREFIX_SEPARATOR in identifier:
+    #  raise ValueError(
+    #      'Identifier cannot contain {!r}: got {}'
+    #      .format(constants.PREFIX_SEPARATOR, identifier))
     else:
       namespace_dict[identifier] = obj
 

@@ -250,11 +250,12 @@ class Identifier(_Attribute):
       raise ValueError('A body cannot be named \'world\'. '
                        'The name \'world\' is used by MuJoCo to refer to the '
                        '<worldbody>.')
-    elif constants.PREFIX_SEPARATOR in value:
-      raise ValueError(
-          'An identifier cannot contain a {!r}, '
-          'as this is reserved for scoping purposes: got {!r}'
-          .format(constants.PREFIX_SEPARATOR, value))
+    # YEJIN: annoying that it allows this during scene creation but won't let it set to copy from xml
+    #elif constants.PREFIX_SEPARATOR in value:
+    #  raise ValueError(
+    #      'An identifier cannot contain a {!r}, '
+    #      'as this is reserved for scoping purposes: got {!r}'
+    #      .format(constants.PREFIX_SEPARATOR, value))
     else:
       old_value = self._value
       if value != old_value:
