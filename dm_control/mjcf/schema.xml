@@ -242,6 +242,8 @@
             <attribute name="specular" type="float"/>
             <attribute name="shininess" type="float"/>
             <attribute name="reflectance" type="float"/>
+            <attribute name="roughness" type="float"/>
+            <attribute name="metallic" type="float"/>
             <attribute name="rgba" type="array" array_type="float" array_size="4"/>
           </attributes>
         </element>
@@ -560,6 +562,8 @@
                 <attribute name="specular" type="float"/>
                 <attribute name="shininess" type="float"/>
                 <attribute name="reflectance" type="float"/>
+                <attribute name="roughness" type="float"/>
+                <attribute name="metallic" type="float"/>
                 <attribute name="rgba" type="array" array_type="float" array_size="4"/>
               </attributes>
             </element>
@@ -934,6 +938,7 @@
             <attribute name="face" type="array" array_type="int"/>
             <attribute name="refpos" type="array" array_type="float" array_size="3"/>
             <attribute name="refquat" type="array" array_type="float" array_size="4"/>
+            <attribute name="inertia" type="keyword" valid_values="convex exact legacy shell"/>
           </attributes>
           <children>
             <element name="plugin" repeated="true" namespace="mesh">
@@ -988,6 +993,8 @@
             <attribute name="specular" type="float"/>
             <attribute name="shininess" type="float"/>
             <attribute name="reflectance" type="float"/>
+            <attribute name="roughness" type="float"/>
+            <attribute name="metallic" type="float"/>
             <attribute name="rgba" type="array" array_type="float" array_size="4"/>
           </attributes>
         </element>
