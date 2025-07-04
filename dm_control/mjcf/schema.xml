@@ -939,6 +939,7 @@
             <attribute name="refpos" type="array" array_type="float" array_size="3"/>
             <attribute name="refquat" type="array" array_type="float" array_size="4"/>
             <attribute name="inertia" type="keyword" valid_values="convex exact legacy shell"/>
+            <attribute name="content_type" type="string" valid_values="model/vnd.mujoco.msh model/obj model/stl"/>
           </attributes>
           <children>
             <element name="plugin" repeated="true" namespace="mesh">
